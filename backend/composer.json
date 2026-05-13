@@ -1,0 +1,17 @@
+{
+    "name": "janss/backend",
+    "autoload": {
+        "psr-4": {
+            "Janss\\Backend\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Janssen12",
+            "email": "jcmm2023-4700-61428@bicol-u.edu.ph"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^5.7"
+    }
+}
