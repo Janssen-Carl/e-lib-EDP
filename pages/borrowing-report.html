@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Return Report</title>
-    <link rel="stylesheet" href="styles/shared.css">
+    <title>Borrowing Report</title>
+    <link rel="stylesheet" href="../styles/shared.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,25 +14,25 @@
         .date-range { display: flex; gap: 10px; align-items: center; }
         .btn { padding: 10px 20px; background: #2563EB; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
         .btn:hover { background: #1D4ED8; }
+        .btn-secondary { background: #64748B; }
+        .btn-secondary:hover { background: #475569; }
         .btn-export { background: #22C55E; }
         .btn-export:hover { background: #16A34A; }
         input[type="date"] { padding: 8px 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .summary-card { background: #F8FAFC; padding: 15px; border-radius: 8px; border-left: 4px solid #2563EB; }
-        .summary-card.good { border-left-color: #22C55E; }
-        .summary-card.damage { border-left-color: #F59E0B; }
-        .summary-card.lost { border-left-color: #EF4444; }
-        .summary-value { font-size: 24px; font-weight: 700; color: #1E293B; }
+        .summary-card.overdue { border-left-color: #EF4444; }
+        .summary-card.success { border-left-color: #22C55E; }
+        .summary-value { font-size: 28px; font-weight: 700; color: #1E293B; }
         .summary-label { font-size: 12px; color: #64748B; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #2563EB; color: white; padding: 12px; text-align: left; font-weight: 600; }
         td { padding: 12px; border-bottom: 1px solid #E2E8F0; }
         tr:hover { background: #F8FAFC; }
         .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-        .badge-good { background: #D1FAE5; color: #065F46; }
-        .badge-minor { background: #FEF08A; color: #78350F; }
-        .badge-major { background: #FDBA74; color: #7C2D12; }
-        .badge-lost { background: #FEE2E2; color: #991B1B; }
+        .badge-active { background: #D1FAE5; color: #065F46; }
+        .badge-overdue { background: #FEE2E2; color: #991B1B; }
+        .badge-returned { background: #D1D5DB; color: #374151; }
         .alert { padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; }
         .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
         .alert-error { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
@@ -41,8 +41,8 @@
 <body>
     <div class="container">
         <div class="page-header">
-            <h1>📤 Book Return Transactions Report</h1>
-            <p>Track and analyze all book return activities and book conditions</p>
+            <h1>📊 Borrowing Transactions Report</h1>
+            <p>Comprehensive analysis of all book borrowing activities</p>
         </div>
 
         <div id="alertContainer"></div>
@@ -55,6 +55,12 @@
                 <label>To:</label>
                 <input type="date" id="endDate">
             </div>
+            <select id="statusFilter" style="padding: 8px 12px; border: 1.5px solid #E2E8F0; border-radius: 6px;">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Overdue">Overdue</option>
+                <option value="Returned">Returned</option>
+            </select>
             <button class="btn" onclick="generateReport()">Generate Report</button>
             <button class="btn btn-export" onclick="exportToExcel()">
                 <i class="fas fa-file-excel"></i> Export to Excel
@@ -69,17 +75,18 @@
             <table id="reportTable" class="display">
                 <thead>
                     <tr>
-                        <th>Return ID</th>
+                        <th>Transaction ID</th>
                         <th>Member Name</th>
                         <th>Email</th>
                         <th>Book Title</th>
                         <th>ISBN</th>
+                        <th>Category</th>
+                        <th>Borrow Date</th>
+                        <th>Due Date</th>
                         <th>Return Date</th>
-                        <th>Condition</th>
+                        <th>Status</th>
                         <th>Days Overdue</th>
-                        <th>Late Fee</th>
-                        <th>Processed By</th>
-                        <th>Notes</th>
+                        <th>Estimated Fine</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -93,9 +100,11 @@
     <script>
         const API_URL = 'backend/public/transactions-api.php';
         let reportData = [];
+        let dataTable = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            // Set default dates
             const today = new Date();
             const thirtydaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
             
@@ -111,10 +120,12 @@
         function generateReport() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
+            const status = document.getElementById('statusFilter').value;
 
-            let url = `${API_URL}?endpoint=return-report`;
+            let url = `${API_URL}?endpoint=borrowing-report`;
             if (startDate) url += `&startDate=${startDate}`;
             if (endDate) url += `&endDate=${endDate}`;
+            if (status) url += `&status=${status}`;
 
             fetch(url)
                 .then(response => response.json())
@@ -136,33 +147,30 @@
          * Display report
          */
         function displayReport(data) {
+            // Display summary cards
             const summaryContainer = document.getElementById('summaryContainer');
             const summary = data.summary;
 
             summaryContainer.innerHTML = `
                 <div class="summary-card">
                     <div class="summary-value">${summary.total}</div>
-                    <div class="summary-label">Total Returns</div>
+                    <div class="summary-label">Total Borrowings</div>
                 </div>
-                <div class="summary-card good">
-                    <div class="summary-value">${summary.good}</div>
-                    <div class="summary-label">Good Condition</div>
+                <div class="summary-card success">
+                    <div class="summary-value">${summary.active}</div>
+                    <div class="summary-label">Active Borrowings</div>
                 </div>
-                <div class="summary-card damage">
-                    <div class="summary-value">${summary.minorDamage}</div>
-                    <div class="summary-label">Minor Damage</div>
+                <div class="summary-card overdue">
+                    <div class="summary-value">${summary.overdue}</div>
+                    <div class="summary-label">Overdue Books</div>
                 </div>
-                <div class="summary-card damage">
-                    <div class="summary-value">${summary.majorDamage}</div>
-                    <div class="summary-label">Major Damage</div>
-                </div>
-                <div class="summary-card lost">
-                    <div class="summary-value">${summary.lost}</div>
-                    <div class="summary-label">Lost Books</div>
+                <div class="summary-card">
+                    <div class="summary-value">${summary.returned}</div>
+                    <div class="summary-label">Returned</div>
                 </div>
                 <div class="summary-card" style="border-left-color: #F59E0B;">
-                    <div class="summary-value">₱${(summary.totalLateFees || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                    <div class="summary-label">Total Late Fees</div>
+                    <div class="summary-value">₱${(summary.totalEstimatedFines || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                    <div class="summary-label">Total Estimated Fines</div>
                 </div>
             `;
 
@@ -171,22 +179,22 @@
             tbody.innerHTML = '';
 
             data.data.forEach(record => {
-                const conditionClass = `badge-${record.BookCondition.toLowerCase().replace(' ', '-')}`;
-                const conditionBadge = `<span class="badge ${conditionClass}">${record.BookCondition}</span>`;
+                const statusBadge = `<span class="badge badge-${record.Status.toLowerCase()}">${record.Status}</span>`;
                 const row = document.createElement('tr');
 
                 row.innerHTML = `
-                    <td>${record.ReturnTransactionID}</td>
+                    <td>${record.TransactionID}</td>
                     <td>${record.MemberName}</td>
                     <td>${record.MemberEmail}</td>
                     <td>${record.BookTitle}</td>
                     <td>${record.ISBN}</td>
-                    <td>${new Date(record.ReturnDate).toLocaleDateString()}</td>
-                    <td>${conditionBadge}</td>
+                    <td>${record.Category_Name || '-'}</td>
+                    <td>${new Date(record.BorrowDate).toLocaleDateString()}</td>
+                    <td>${new Date(record.DueDate).toLocaleDateString()}</td>
+                    <td>${record.ReturnDate ? new Date(record.ReturnDate).toLocaleDateString() : '-'}</td>
+                    <td>${statusBadge}</td>
                     <td>${record.DaysOverdue || 0}</td>
-                    <td>₱${(record.LateFee || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                    <td>${record.LibrarianName}</td>
-                    <td>${record.Notes || '-'}</td>
+                    <td>₱${(record.EstimatedFine || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -203,16 +211,18 @@
 
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
+            const status = document.getElementById('statusFilter').value;
 
             const payload = {
                 startDate: startDate,
                 endDate: endDate,
+                status: status,
                 generatedBy: JSON.parse(localStorage.getItem('user') || '{}').FullName || 'Administrator'
             };
 
             showAlert('Generating Excel file...', 'success');
 
-            fetch(`${API_URL}?endpoint=export-return-excel`, {
+            fetch(`${API_URL}?endpoint=export-borrowing-excel`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -220,6 +230,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Download the file
                     const link = document.createElement('a');
                     link.href = data.filepath;
                     link.download = data.filename;

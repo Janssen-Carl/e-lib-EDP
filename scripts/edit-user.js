@@ -10,7 +10,7 @@ async function initUser() {
     // console.log("editUserId (parsed):", parseInt(editUserId));
 
     // if (!editUserId || isNaN(parseInt(editUserId))) {
-    //   window.location.href = "user-management.html";
+    //   window.location.href = "pages/user-management.html";
     //   return;
     // }
 
@@ -46,7 +46,7 @@ async function initUser() {
     localStorage.removeItem("editUserId");
 
     alert("Failed to load user data");
-    window.location.href = "user-management.html";
+    window.location.href = "pages/user-management.html";
   }
 }
 
@@ -117,7 +117,7 @@ async function handleUpdateUser(event) {
       "User updated successfully!";
 
     setTimeout(() => {
-      window.location.href = "user-management.html";
+      window.location.href = "pages/user-management.html";
     }, 1500);
   } catch (err) {
     setLoading(false);
@@ -136,7 +136,7 @@ function discardChanges() {
 }
 
 function goBack() {
-  window.location.href = "user-management.html";
+  window.location.href = "pages/user-management.html";
 }
 
 // Initialize on page load

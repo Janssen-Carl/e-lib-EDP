@@ -72,7 +72,7 @@ async function loadUsers() {
     // console.log('TOKEN:', API.getAccessToken());
 
     // if (!token || token === "undefined" || token === "null") {
-    //   window.location.href = "login.html";
+    //   window.location.href = "pages/login.html";
     //   return;
     // }
 
@@ -108,7 +108,7 @@ function filterUsers() {
 
 function editUser(userId) {
   localStorage.setItem("editUserId", userId);
-  window.location.href = `edit-user.html?id=${userId}`;
+  window.location.href = `pages/edit-user.html?id=${userId}`;
 }
 
 async function toggleStatus(userId) {
@@ -126,12 +126,12 @@ async function toggleStatus(userId) {
 }
 
 function openCreateAccount() {
-  window.location.href = "create-account.html";
+  window.location.href = "pages/create-account.html";
 }
 
 function goBack() {
   API.clearSession();
-  window.location.href = "login.html";
+  window.location.href = "pages/login.html";
 }
 
 // Initialize
