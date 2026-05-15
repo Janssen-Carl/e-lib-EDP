@@ -134,6 +134,10 @@ function goBack() {
   window.location.href = "login.html";
 }
 
+function goToTransactions() {
+  window.location.href = "transactions-dashboard.html";
+}
+
 // Initialize
 window.addEventListener("load", () => {
   loadUsers();

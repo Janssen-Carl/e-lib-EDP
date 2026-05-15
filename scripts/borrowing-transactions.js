@@ -1,5 +1,5 @@
 // API endpoint
-const API_URL = 'backend/public/transactions-api.php';
+const API_URL = '../backend/public/transactions-api.php';
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -108,18 +108,16 @@ function loadBooks() {
  * Load available members
  */
 function loadMembers() {
-    fetch('backend/public/api.php?endpoint=get-members')
+    fetch(`${API_URL}?endpoint=get-members`)
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.users) {
+            if (data.success && data.data) {
                 const select = document.getElementById('borrowUserId');
-                data.users.forEach(user => {
-                    if (user.UserType === 'Member') {
-                        const option = document.createElement('option');
-                        option.value = user.User_ID;
-                        option.textContent = `${user.FullName} (${user.Email})`;
-                        select.appendChild(option);
-                    }
+                data.data.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.User_ID;
+                    option.textContent = `${user.FullName} (${user.Email})`;
+                    select.appendChild(option);
                 });
             }
         })
@@ -267,8 +265,16 @@ function submitReturnForm() {
  * Get current user ID from localStorage
  */
 function getCurrentUserId() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user.User_ID || 0;
+    try {
+        const userStr = localStorage.getItem('user') || localStorage.getItem('userData');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            return user.User_ID || user.id || user.userId || 0;
+        }
+    } catch (e) {
+        console.error('Error parsing user data', e);
+    }
+    return 0;
 }
 
 /**

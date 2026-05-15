@@ -185,7 +185,7 @@ final class BorrowingService
     ): array {
         try {
             $query = '
-                SELECT bt.*, b.BookTitle, b.ISBN, u.FullName, u.Email
+                SELECT bt.*, b.BookTitle, b.ISBN, u.FullName as MemberName, u.Email as MemberEmail
                 FROM borrowing_transactions bt
                 JOIN book b ON bt.BookID = b.BookID
                 JOIN user_elibrary u ON bt.User_ID = u.User_ID
@@ -243,7 +243,7 @@ final class BorrowingService
     ): array {
         try {
             $query = '
-                SELECT rt.*, b.BookTitle, b.ISBN, u.FullName, u.Email,
+                SELECT rt.*, b.BookTitle, b.ISBN, u.FullName as MemberName, u.Email as MemberEmail,
                        lib.FullName as ProcessedByName
                 FROM return_transactions rt
                 JOIN book b ON rt.BookID = b.BookID

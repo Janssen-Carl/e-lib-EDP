@@ -40,8 +40,14 @@
 </head>
 <body>
     <div class="container">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding:10px 0;border-bottom:2px solid #E2E8F0;">
+            <a href="transactions-dashboard.html" style="text-decoration:none;color:#2563EB;font-weight:600;font-size:14px;">← Back to Dashboard</a>
+            <div style="display:flex;gap:10px;">
+                <a href="borrowing-transactions.html" class="btn btn-secondary" style="font-size:12px;padding:6px 14px;text-decoration:none;">Manage Borrowings</a>
+            </div>
+        </div>
         <div class="page-header">
-            <h1>📊 Borrowing Transactions Report</h1>
+            <h1>Borrowing Transactions Report</h1>
             <p>Comprehensive analysis of all book borrowing activities</p>
         </div>
 
@@ -63,7 +69,7 @@
             </select>
             <button class="btn" onclick="generateReport()">Generate Report</button>
             <button class="btn btn-export" onclick="exportToExcel()">
-                <i class="fas fa-file-excel"></i> Export to Excel
+                 Export to Excel
             </button>
         </div>
 
@@ -98,7 +104,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
     <script>
-        const API_URL = 'backend/public/transactions-api.php';
+        const API_URL = '../backend/public/transactions-api.php';
         let reportData = [];
         let dataTable = null;
 

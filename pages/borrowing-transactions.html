@@ -43,8 +43,14 @@
 </head>
 <body>
     <div class="container">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding:10px 0;border-bottom:2px solid #E2E8F0;">
+            <a href="transactions-dashboard.html" style="text-decoration:none;color:#2563EB;font-weight:600;font-size:14px;">← Back to Dashboard</a>
+            <div style="display:flex;gap:10px;">
+                <a href="borrowing-report.html" class="btn btn-secondary" style="font-size:12px;padding:6px 14px;text-decoration:none;"> Borrowing Report</a>
+            </div>
+        </div>
         <div class="page-header">
-            <h1>📚 Book Borrowing Transactions</h1>
+            <h1>Book Borrowing Transactions</h1>
             <p>Manage and track all book borrowing activities</p>
         </div>
 
@@ -162,6 +168,6 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-    <script src="../scripts/borrowing-transactions.js"></script>
+    <script src="../scripts/borrowing-transactions.js?v=3"></script>
 </body>
 </html>

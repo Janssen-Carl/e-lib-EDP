@@ -81,30 +81,52 @@ async function handleSignIn() {
   const pw = document.getElementById("pwInput").value;
 
   try {
+    console.log('Attempting login with email:', email);
     const response = await API.login(email, pw, currentRole);
+    console.log('Login response:', response);
 
-    localStorage.setItem("accessToken", response.token);
-    localStorage.setItem("userData", JSON.stringify(response.user));
-
+    // Validate response
     if (!response || response.error || response.success === false) {
+      console.error('Invalid response structure:', response);
       throw response;
     }
 
+    // Ensure user data is saved to localStorage for dashboard compatibility
+    if (response.user && response.token) {
+      console.log('Saving user and token to localStorage');
+      localStorage.setItem("accessToken", response.token);
+      localStorage.setItem("userData", JSON.stringify(response.user));
+      localStorage.setItem("user", JSON.stringify(response.user)); // For compatibility with transaction pages
+    } else if (response.data && response.data.user && response.data.token) {
+      // Handle nested response structure
+      console.log('Saving nested user and token to localStorage');
+      localStorage.setItem("accessToken", response.data.token);
+      localStorage.setItem("userData", JSON.stringify(response.data.user));
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+    } else {
+      console.error('Response missing user or token:', response);
+      throw new Error('Response missing user or token');
+    }
+
+    console.log('Stored data. User:', localStorage.getItem('user'));
+    
     setLoading(false);
     const banner = document.getElementById("alertBanner");
     banner.className = "alert alert-success visible";
     document.getElementById("alertText").textContent =
-      `Welcome back! Redirecting to user management…`;
+      `Welcome back! Redirecting to transactions dashboard…`;
 
     setTimeout(() => {
-      window.location.href = "user-management.html";
+      console.log('Redirecting to transactions-dashboard.html');
+      window.location.href = "transactions-dashboard.html";
     }, 1500);
   } catch (err) {
+    console.error('Login error:', err);
     setLoading(false);
     const banner = document.getElementById("alertBanner");
     banner.className = "alert alert-error visible";
     document.getElementById("alertText").textContent =
-      err.error || "Invalid email or password. Please try again.";
+      err.error || err.message || "Invalid email or password. Please try again.";
     document.getElementById("emailInput").classList.add("error");
     document.getElementById("pwInput").classList.add("error");
   }

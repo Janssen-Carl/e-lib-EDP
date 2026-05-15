@@ -234,7 +234,8 @@ final class ReportService
                     COUNT(*) as TotalCountSessions,
                     SUM(CASE WHEN CountStatus = "In Progress" THEN 1 ELSE 0 END) as InProgressCounts,
                     SUM(CASE WHEN CountStatus = "Completed" THEN 1 ELSE 0 END) as CompletedCounts,
-                    SUM(CASE WHEN CountStatus = "Verified" THEN 1 ELSE 0 END) as VerifiedCounts
+                    SUM(CASE WHEN CountStatus = "Verified" THEN 1 ELSE 0 END) as VerifiedCounts,
+                    SUM(Discrepancies) as TotalDiscrepancies
                 FROM inventory_counts
             ');
             $stmt->execute();

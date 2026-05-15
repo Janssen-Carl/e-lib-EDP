@@ -1,5 +1,5 @@
 // API endpoint
-const API_URL = 'backend/public/transactions-api.php';
+const API_URL = '../backend/public/transactions-api.php';
 let currentCountId = null;
 
 // Initialize on page load
@@ -240,14 +240,12 @@ function displayInventoryTable(details) {
             <td>${item.BookTitle}</td>
             <td><input type="number" value="${item.ExpectedQuantity}" readonly style="width: 60px; text-align: center;"></td>
             <td>
-                <input type="number" value="${item.PhysicalQuantity}" 
-                       onchange="updateQuantity(${item.DetailID}, this.value)" 
+                <input type="number" class="physical-qty-input" data-bookid="${item.BookID}" value="${item.PhysicalQuantity}" 
                        style="width: 60px; text-align: center;">
             </td>
             <td ${varianceClass}>${variance}</td>
             <td>
-                <input type="text" placeholder="Notes" 
-                       onchange="updateNotes(${item.DetailID}, this.value)" 
+                <input type="text" class="notes-input" data-bookid="${item.BookID}" placeholder="Notes" value="${item.Notes || ''}"
                        style="width: 100%; padding: 4px;">
             </td>
         `;
@@ -269,39 +267,51 @@ function filterInventoryTable() {
 }
 
 /**
- * Update quantity
+ * Save current progress
  */
-function updateQuantity(detailId, quantity) {
-    // Save to backend immediately
-    const payload = {
-        detailId: detailId,
-        physicalQuantity: parseInt(quantity)
-    };
+function saveInventoryCountProgress(isCompleting = false) {
+    if (!currentCountId) return Promise.resolve();
 
-    fetch(`${API_URL}?endpoint=record-quantity`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .catch(error => console.error('Error updating quantity:', error));
-}
+    const qtyInputs = document.querySelectorAll('.physical-qty-input');
+    const notesInputs = document.querySelectorAll('.notes-input');
+    
+    const requests = [];
 
-/**
- * Update notes
- */
-function updateNotes(detailId, notes) {
-    // Save notes to backend
-    const payload = {
-        detailId: detailId,
-        notes: notes
-    };
+    qtyInputs.forEach((input, index) => {
+        const bookId = parseInt(input.getAttribute('data-bookid'));
+        const quantity = parseInt(input.value) || 0;
+        const notes = notesInputs[index] ? notesInputs[index].value : '';
 
-    fetch(`${API_URL}?endpoint=record-quantity`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .catch(error => console.error('Error updating notes:', error));
+        const payload = {
+            countId: currentCountId,
+            bookId: bookId,
+            physicalQuantity: quantity,
+            notes: notes
+        };
+
+        requests.push(
+            fetch(`${API_URL}?endpoint=record-quantity`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+        );
+    });
+
+    return Promise.all(requests)
+        .then(() => {
+            if (!isCompleting) {
+                showAlert('Progress saved successfully!', 'success');
+                // Reload to refresh variances
+                loadInventoryForCount(currentCountId);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving progress:', error);
+            if (!isCompleting) {
+                showAlert('Error saving progress', 'error');
+            }
+        });
 }
 
 /**
@@ -310,29 +320,32 @@ function updateNotes(detailId, notes) {
 function completeInventoryCount() {
     if (!currentCountId) return;
 
-    const payload = {
-        countId: currentCountId,
-        conductedBy: getCurrentUserId()
-    };
+    // Save progress first, then complete
+    saveInventoryCountProgress(true).then(() => {
+        const payload = {
+            countId: currentCountId,
+            conductedBy: getCurrentUserId()
+        };
 
-    fetch(`${API_URL}?endpoint=complete-inventory-count`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('Inventory count completed successfully!', 'success');
-            closeRecordQuantityModal();
-            loadActiveCounts();
-        } else {
-            showAlert('Error completing count: ' + data.message, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('Failed to complete inventory count', 'error');
+        fetch(`${API_URL}?endpoint=complete-inventory-count`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Inventory count completed successfully!', 'success');
+                closeRecordQuantityModal();
+                loadActiveCounts();
+            } else {
+                showAlert('Error completing count: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Failed to complete inventory count', 'error');
+        });
     });
 }
 
@@ -378,8 +391,16 @@ function viewCountDetails(countId) {
  * Get current user ID from localStorage
  */
 function getCurrentUserId() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user.User_ID || 0;
+    try {
+        const userStr = localStorage.getItem('user') || localStorage.getItem('userData');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            return user.User_ID || user.id || user.userId || 0;
+        }
+    } catch (e) {
+        console.error('Error parsing user data', e);
+    }
+    return 0;
 }
 
 /**

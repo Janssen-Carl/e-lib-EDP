@@ -11,29 +11,47 @@ use Exception;
  * Handles all API endpoints for borrowing, return, and inventory transactions
  */
 
-// Include autoloader and required classes
-require_once __DIR__ . '/Config.php';
-require_once __DIR__ . '/Database.php';
-require_once __DIR__ . '/Http.php';
-require_once __DIR__ . '/AuthService.php';
-require_once __DIR__ . '/BorrowingService.php';
-require_once __DIR__ . '/InventoryService.php';
-require_once __DIR__ . '/ReportService.php';
+// Include required classes from src/
+require_once __DIR__ . '/../src/Config.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/Http.php';
+require_once __DIR__ . '/../src/AuthService.php';
+require_once __DIR__ . '/../src/BorrowingService.php';
+require_once __DIR__ . '/../src/InventoryService.php';
+require_once __DIR__ . '/../src/ReportService.php';
+
+// Load environment configuration
+Config::loadEnv(__DIR__ . '/../.env');
+
+// CORS headers
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
 // Check for phpspreadsheet - load if available
-$spreadsheetPath = __DIR__ . '/../../vendor/autoload.php';
+$spreadsheetPath = __DIR__ . '/../vendor/autoload.php';
 if (file_exists($spreadsheetPath)) {
     require_once $spreadsheetPath;
+    require_once __DIR__ . '/../src/ExcelExportService.php';
 }
 
 try {
-    $http = new Http();
     $method = $_SERVER['REQUEST_METHOD'];
-    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $parts = explode('/', trim($path, '/'));
 
-    // Determine endpoint
-    $endpoint = $parts[count($parts) - 1] ?? '';
+    // Determine endpoint from query parameter (frontend uses ?endpoint=xxx)
+    $endpoint = $_GET['endpoint'] ?? '';
+
+    // Fallback: try URL path if no query param
+    if (empty($endpoint)) {
+        $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $parts = explode('/', trim($path, '/'));
+        $endpoint = $parts[count($parts) - 1] ?? '';
+    }
 
     // ========== BORROWING TRANSACTIONS ==========
     if ($endpoint === 'borrow' && $method === 'POST') {
@@ -48,7 +66,7 @@ try {
             (int) ($data['createdBy'] ?? 0)
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get borrowing transactions
@@ -61,7 +79,7 @@ try {
             isset($_GET['offset']) ? (int) $_GET['offset'] : null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // ========== RETURN TRANSACTIONS ==========
@@ -76,7 +94,7 @@ try {
             $data['notes'] ?? null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get return transactions
@@ -101,14 +119,14 @@ try {
             isset($_GET['offset']) ? (int) $_GET['offset'] : null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get overdue books
     elseif ($endpoint === 'overdue-books' && $method === 'GET') {
         $borrowingService = new BorrowingService();
         $result = $borrowingService->getOverdueBooks();
-        $http->response($result);
+        Http::json($result);
     }
 
     // ========== INVENTORY TRANSACTIONS ==========
@@ -121,7 +139,7 @@ try {
             $data['notes'] ?? null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Record physical quantity
@@ -136,7 +154,7 @@ try {
             $data['notes'] ?? null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Complete inventory count
@@ -149,7 +167,7 @@ try {
             (int) $data['conductedBy']
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Verify inventory count
@@ -162,7 +180,7 @@ try {
             (int) $data['verifiedBy']
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get inventory counts
@@ -174,7 +192,7 @@ try {
             isset($_GET['offset']) ? (int) $_GET['offset'] : null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get inventory count by ID
@@ -184,7 +202,7 @@ try {
         $inventoryService = new InventoryService();
         $result = $inventoryService->getInventoryCount($countId);
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get inventory discrepancies
@@ -194,7 +212,7 @@ try {
             isset($_GET['countId']) ? (int) $_GET['countId'] : null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // ========== BOOK INVENTORY ==========
@@ -211,7 +229,19 @@ try {
             );
         }
 
-        $http->response($result);
+        Http::json($result);
+    }
+
+    // Get members (for borrow dropdown)
+    elseif ($endpoint === 'get-members' && $method === 'GET') {
+        require_once __DIR__ . '/../src/UserService.php';
+        $userService = new UserService(Database::connection());
+        $users = $userService->list([
+            'search' => '',
+            'type' => 'Member',
+            'status' => 'Active',
+        ]);
+        Http::json(['success' => true, 'data' => $users]);
     }
 
     // ========== REPORTS ==========
@@ -234,7 +264,7 @@ try {
             $_GET['status'] ?? null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get return report
@@ -253,7 +283,7 @@ try {
 
         $result = $reportService->getReturnReport($startDate, $endDate);
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get inventory report
@@ -263,14 +293,14 @@ try {
             isset($_GET['countId']) ? (int) $_GET['countId'] : null
         );
 
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get transaction statistics
     elseif ($endpoint === 'transaction-statistics' && $method === 'GET') {
         $reportService = new ReportService();
         $result = $reportService->getTransactionStatistics();
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get top borrowed books
@@ -279,7 +309,7 @@ try {
         $result = $reportService->getTopBorrowedBooks(
             (int) ($_GET['limit'] ?? 10)
         );
-        $http->response($result);
+        Http::json($result);
     }
 
     // Get top borrowers
@@ -288,13 +318,13 @@ try {
         $result = $reportService->getTopBorrowers(
             (int) ($_GET['limit'] ?? 10)
         );
-        $http->response($result);
+        Http::json($result);
     }
 
     // ========== EXCEL EXPORT ==========
     elseif ($endpoint === 'export-borrowing-excel' && $method === 'POST') {
         if (!class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $http->response([
+            Http::json([
                 'success' => false,
                 'message' => 'PhpSpreadsheet library not installed. Run: composer require phpoffice/phpspreadsheet'
             ]);
@@ -314,21 +344,21 @@ try {
             $excelService = new ExcelExportService($data['generatedBy'] ?? 'System Administrator');
             $filepath = $excelService->generateBorrowingReport($report['data'], $report['summary']);
 
-            $http->response([
+            Http::json([
                 'success' => true,
-                'filepath' => $filepath,
+                'filepath' => '/e-lib-EDP/backend/reports/' . basename($filepath),
                 'filename' => basename($filepath),
                 'message' => 'Report exported successfully'
             ]);
         } else {
-            $http->response($report);
+            Http::json($report);
         }
     }
 
     // Export return report to Excel
     elseif ($endpoint === 'export-return-excel' && $method === 'POST') {
         if (!class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $http->response([
+            Http::json([
                 'success' => false,
                 'message' => 'PhpSpreadsheet library not installed'
             ]);
@@ -347,21 +377,21 @@ try {
             $excelService = new ExcelExportService($data['generatedBy'] ?? 'System Administrator');
             $filepath = $excelService->generateReturnReport($report['data'], $report['summary']);
 
-            $http->response([
+            Http::json([
                 'success' => true,
-                'filepath' => $filepath,
+                'filepath' => '/e-lib-EDP/backend/reports/' . basename($filepath),
                 'filename' => basename($filepath),
                 'message' => 'Report exported successfully'
             ]);
         } else {
-            $http->response($report);
+            Http::json($report);
         }
     }
 
     // Export inventory report to Excel
     elseif ($endpoint === 'export-inventory-excel' && $method === 'POST') {
         if (!class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $http->response([
+            Http::json([
                 'success' => false,
                 'message' => 'PhpSpreadsheet library not installed'
             ]);
@@ -382,25 +412,25 @@ try {
                 $report['summary']
             );
 
-            $http->response([
+            Http::json([
                 'success' => true,
-                'filepath' => $filepath,
+                'filepath' => '/e-lib-EDP/backend/reports/' . basename($filepath),
                 'filename' => basename($filepath),
                 'message' => 'Report exported successfully'
             ]);
         } else {
-            $http->response($report);
+            Http::json($report);
         }
     }
 
     else {
-        $http->response([
+        Http::json([
             'success' => false,
             'message' => 'Endpoint not found'
         ], 404);
     }
 } catch (Exception $e) {
-    $http->response([
+    Http::json([
         'success' => false,
         'message' => $e->getMessage()
     ], 500);

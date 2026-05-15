@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-You now have a **complete, production-ready transaction management system** for your Metro City e-Library System with:
+You now have a **complete, production-ready transaction management system** for your -Library System with:
 
 - ✅ **3 Primary Transactions** (Borrowing, Returns, Inventory)
 - ✅ **3 Comprehensive Reports** (all with DataGrid & Excel export)
