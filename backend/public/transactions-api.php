@@ -333,11 +333,15 @@ try {
 
         $data = json_decode(file_get_contents('php://input'), true);
 
+        $startDate = (!empty($data['startDate'])) ? \DateTime::createFromFormat('Y-m-d', $data['startDate']) : null;
+        $endDate = (!empty($data['endDate'])) ? \DateTime::createFromFormat('Y-m-d', $data['endDate']) : null;
+        $status = (!empty($data['status'])) ? $data['status'] : null;
+
         $reportService = new ReportService();
         $report = $reportService->getBorrowingReport(
-            isset($data['startDate']) ? \DateTime::createFromFormat('Y-m-d', $data['startDate']) : null,
-            isset($data['endDate']) ? \DateTime::createFromFormat('Y-m-d', $data['endDate']) : null,
-            $data['status'] ?? null
+            $startDate instanceof \DateTime ? $startDate : null,
+            $endDate instanceof \DateTime ? $endDate : null,
+            $status
         );
 
         if ($report['success']) {
@@ -367,10 +371,13 @@ try {
 
         $data = json_decode(file_get_contents('php://input'), true);
 
+        $startDate = (!empty($data['startDate'])) ? \DateTime::createFromFormat('Y-m-d', $data['startDate']) : null;
+        $endDate = (!empty($data['endDate'])) ? \DateTime::createFromFormat('Y-m-d', $data['endDate']) : null;
+
         $reportService = new ReportService();
         $report = $reportService->getReturnReport(
-            isset($data['startDate']) ? \DateTime::createFromFormat('Y-m-d', $data['startDate']) : null,
-            isset($data['endDate']) ? \DateTime::createFromFormat('Y-m-d', $data['endDate']) : null
+            $startDate instanceof \DateTime ? $startDate : null,
+            $endDate instanceof \DateTime ? $endDate : null
         );
 
         if ($report['success']) {
