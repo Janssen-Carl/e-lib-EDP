@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../styles/shared.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .page-header { margin-bottom: 30px; }
@@ -71,6 +72,16 @@
 
         <!-- Summary Cards -->
         <div class="summary-grid" id="summaryContainer"></div>
+        
+        <!-- Charts Section -->
+        <div class="charts-container" style="margin-bottom: 30px;">
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #E2E8F0; max-width: 600px; margin: 0 auto;">
+                <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #1E293B; text-align: center;">Book Condition Distribution</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="conditionChart"></canvas>
+                </div>
+            </div>
+        </div>
 
         <!-- Data Table -->
         <div style="overflow-x: auto;">
@@ -101,6 +112,7 @@
     <script>
         const API_URL = '../backend/public/transactions-api.php';
         let reportData = [];
+        let conditionChart = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -173,6 +185,9 @@
                     <div class="summary-label">Total Late Fees</div>
                 </div>
             `;
+            
+            // Render Charts
+            renderCharts(summary);
 
             // Display table
             const tbody = document.getElementById('tableBody');
@@ -197,6 +212,34 @@
                     <td>${record.Notes || '-'}</td>
                 `;
                 tbody.appendChild(row);
+            });
+        }
+
+        /**
+         * Render charts
+         */
+        function renderCharts(summary) {
+            if (conditionChart) conditionChart.destroy();
+            const ctx = document.getElementById('conditionChart').getContext('2d');
+            conditionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Good', 'Minor Damage', 'Major Damage', 'Lost'],
+                    datasets: [{
+                        data: [summary.good, summary.minorDamage, summary.majorDamage, summary.lost],
+                        backgroundColor: ['#22C55E', '#FEF08A', '#FDBA74', '#EF4444'],
+                        borderColor: ['#16A34A', '#EAB308', '#F97316', '#DC2626'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '60%'
+                }
             });
         }
 

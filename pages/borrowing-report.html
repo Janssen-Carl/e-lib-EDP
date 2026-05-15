@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../styles/shared.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .page-header { margin-bottom: 30px; }
@@ -75,6 +76,22 @@
 
         <!-- Summary Cards -->
         <div class="summary-grid" id="summaryContainer"></div>
+        
+        <!-- Charts Section -->
+        <div class="charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #E2E8F0;">
+                <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #1E293B;">Borrowing Status Distribution</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #E2E8F0;">
+                <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #1E293B;">Top Borrowed Categories</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
 
         <!-- Data Table -->
         <div style="overflow-x: auto;">
@@ -107,6 +124,8 @@
         const API_URL = '../backend/public/transactions-api.php';
         let reportData = [];
         let dataTable = null;
+        let statusChart = null;
+        let categoryChart = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -180,6 +199,9 @@
                 </div>
             `;
 
+            // Render Charts
+            renderCharts(summary, data.data);
+
             // Display table
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -203,6 +225,73 @@
                     <td>₱${(record.EstimatedFine || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                 `;
                 tbody.appendChild(row);
+            });
+        }
+
+        /**
+         * Render charts
+         */
+        function renderCharts(summary, data) {
+            // 1. Status Chart
+            if (statusChart) statusChart.destroy();
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Active', 'Overdue', 'Returned'],
+                    datasets: [{
+                        data: [summary.active, summary.overdue, summary.returned],
+                        backgroundColor: ['#D1FAE5', '#FEE2E2', '#D1D5DB'],
+                        borderColor: ['#065F46', '#991B1B', '#374151'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+
+            // 2. Category Chart
+            if (categoryChart) categoryChart.destroy();
+            
+            // Group by category
+            const categories = {};
+            data.forEach(item => {
+                const cat = item.Category_Name || 'Uncategorized';
+                categories[cat] = (categories[cat] || 0) + 1;
+            });
+            
+            const sortedCats = Object.entries(categories)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedCats.map(c => c[0]),
+                    datasets: [{
+                        label: 'Number of Borrows',
+                        data: sortedCats.map(c => c[1]),
+                        backgroundColor: '#2563EB',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
             });
         }
 

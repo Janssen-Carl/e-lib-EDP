@@ -11,7 +11,7 @@
         .page-header { margin-bottom: 30px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn { padding: 10px 20px; background: #2563EB; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        .btn:hover { background: #1D4ED8; }
+        .btn-access:hover { background: #1D4ED8; }
         .btn-secondary { background: #64748B; }
         .btn-secondary:hover { background: #475569; }
         .btn-danger { background: #EF4444; }
@@ -136,8 +136,11 @@
             <h2>Record Physical Quantities</h2>
             <div id="recordQuantityAlert"></div>
             
-            <div class="form-group">
-                <input type="text" id="bookFilter" placeholder="Search book title..." onkeyup="filterInventoryTable()">
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; margin-top: 15px;">
+                <input type="text" id="bookFilter" placeholder="Search book title..." onkeyup="filterInventoryTable()" style="flex: 1;">
+                <button type="button" class="btn btn-success" style="padding: 8px 16px; background-color: #22C55E; white-space: nowrap;" onclick="saveInventoryCountProgress(false)">
+                    Save Progress
+                </button>
             </div>
 
             <table id="inventoryRecordTable" class="display" style="font-size: 12px;">
@@ -154,7 +157,6 @@
             </table>
 
             <div style="margin-top: 20px; display: flex; gap: 10px;">
-                <button type="button" class="btn btn-primary" style="flex: 1; background-color: #3B82F6;" onclick="saveInventoryCountProgress(false)">Save Progress</button>
                 <button type="button" class="btn btn-success" style="flex: 1;" onclick="completeInventoryCount()">Complete Count</button>
                 <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeRecordQuantityModal()">Cancel</button>
             </div>
