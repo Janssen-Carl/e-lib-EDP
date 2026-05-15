@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Library Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles/shared.css">
     <link rel="stylesheet" href="styles/index.css">
 </head>
@@ -11,93 +12,101 @@
     <!-- Navigation Header -->
     <header>
         <nav>
-            <div class="logo">E-Library</div>
-            <ul>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#login">Login</a></li>
-            </ul>
+            <div class="logo">
+                <span class="logo-icon">
+                    <i class="fas fa-book"></i>
+                </span>
+                <div class="logo-text">
+                    <div class="logo-title">E-Library</div>
+                    <div class="logo-subtitle">Library System</div>
+                </div>
+            </div>
+            <div class="nav-center">
+            </div>
+            <div class="nav-right">
+                <a href="login.html" class="action-btn">Sign In</a>
+                <a href="create-account.html" class="action-btn btn-outline">Create Account</a>
+            </div>
         </nav>
     </header>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Welcome to E-Library</h1>
-            <p>Your Digital Gateway to Knowledge and Resources</p>
+            <h1>Welcome to E-Library System</h1>
+            <p>Your comprehensive solution for digital library management. Manage books, track borrowing, and generate insights.</p>
+            <div class="hero-search">
+                <input type="text" class="search-box-hero" placeholder="Search books, literatures...">
+            </div>
             <div class="hero-buttons">
-                <a href="login.html" class="btn btn-primary">Sign In</a>
-                <a href="create-account.html" class="btn btn-secondary">Create Account</a>
+                <a href="login.html" class="btn btn-primary">Get Started</a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
             </div>
         </div>
     </section>
+
+
 
     <!-- Features Section -->
     <section class="features" id="features">
-        <h2 class="section-title">Key Features</h2>
+        <h2 class="section-title">Core Features</h2>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">📚</div>
+                <div class="feature-icon-badge">
+                    <i class="fas fa-book"></i>
+                </div>
                 <h3>Book Management</h3>
-                <p>Browse, search, and manage our extensive collection of books and resources with ease.</p>
+                <p>Comprehensive catalog management with advanced search, filtering, and categorization capabilities.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">📋</div>
-                <h3>Borrowing System</h3>
-                <p>Borrow and return books effortlessly. Track your borrowing history and due dates.</p>
+                <div class="feature-icon-badge">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3>Borrowing & Returns</h3>
+                <p>Streamlined borrowing process with automatic due date tracking and return management.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3>Reports & Analytics</h3>
-                <p>Generate detailed reports on inventory, transactions, and borrowing patterns.</p>
+                <div class="feature-icon-badge">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Smart Notifications</h3>
+                <p>Automated alerts for overdue books, new arrivals, and important system notifications.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">👤</div>
+                <div class="feature-icon-badge">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Analytics & Reports</h3>
+                <p>Detailed reports on library activity, borrowing trends, and inventory status with export options.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon-badge">
+                    <i class="fas fa-user"></i>
+                </div>
                 <h3>User Management</h3>
-                <p>Manage user accounts, profiles, and access permissions securely.</p>
+                <p>Secure user administration with role-based access control and activity tracking.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🔐</div>
+                <div class="feature-icon-badge">
+                    <i class="fas fa-lock"></i>
+                </div>
                 <h3>Security</h3>
-                <p>Your data is protected with robust security measures and encrypted authentication.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>Fast & Reliable</h3>
-                <p>Access our system anytime, anywhere with our fast and reliable platform.</p>
+                <p>Enterprise-grade security with encrypted data storage and secure authentication mechanisms.</p>
             </div>
         </div>
     </section>
 
-    <!-- Stats Section -->
-    <section class="stats">
-        <div class="stats-container">
-            <div class="stat-item">
-                <h4>10,000+</h4>
-                <p>Books in Collection</p>
-            </div>
-            <div class="stat-item">
-                <h4>5,000+</h4>
-                <p>Active Users</p>
-            </div>
-            <div class="stat-item">
-                <h4>50,000+</h4>
-                <p>Transactions Processed</p>
-            </div>
-            <div class="stat-item">
-                <h4>99.9%</h4>
-                <p>System Uptime</p>
-            </div>
-        </div>
-    </section>
+    
 
-    <!-- Quick Actions -->
-    <section class="actions" id="about">
-        <h2>Get Started Today</h2>
-        <p style="margin-bottom: 2rem; color: #666;">Join our library community and enjoy unlimited access to resources</p>
-        <div class="action-buttons">
-            <a href="login.html" class="action-btn">Already a Member? Sign In</a>
-            <a href="create-account.html" class="action-btn">New User? Register Here</a>
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Transform Your Library?</h2>
+            <p>Join thousands of institutions using our system to streamline library operations</p>
+            <div class="cta-buttons">
+                <a href="login.html" class="action-btn btn-primary">Sign In to Dashboard</a>
+                <a href="create-account.html" class="action-btn btn-outline">Create New Account</a>
+            </div>
         </div>
     </section>
 
@@ -110,22 +119,6 @@
                     <li><a href="index.html">Home</a></li>
                     <li><a href="login.html">Login</a></li>
                     <li><a href="create-account.html">Create Account</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>User Tools</h4>
-                <ul>
-                    <li><a href="borrowing-transactions.html">My Transactions</a></li>
-                    <li><a href="edit-profile.html">Edit Profile</a></li>
-                    <li><a href="change-password.html">Change Password</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Reports</h4>
-                <ul>
-                    <li><a href="borrowing-report.html">Borrowing Report</a></li>
-                    <li><a href="return-report.html">Return Report</a></li>
-                    <li><a href="inventory-report.html">Inventory Report</a></li>
                 </ul>
             </div>
             <div class="footer-section">
