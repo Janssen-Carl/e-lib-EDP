@@ -3,8 +3,14 @@
 /* ══════════════════════════════════════════════════════════════ */
 
 const API = {
-  // Base URL - change to your server address
-  BASE_URL: 'http://localhost:8000/api',
+  // Base URL - detect the correct path based on current location
+  get BASE_URL() {
+    const path = window.location.pathname;
+    // Check if path contains 'e-lib-EDP' or similar project folder
+    const projectMatch = path.match(/^\/([^\/]+(?:-EDP)?)\//);
+    const projectPath = projectMatch ? '/' + projectMatch[1] : '';
+    return `${projectPath}/backend/public`;
+  },
   
   // Token storage keys
   ACCESS_TOKEN_KEY: 'accessToken',
@@ -88,22 +94,40 @@ const API = {
       const response = await fetch(url, {
         ...options,
         headers,
+        credentials: 'include', // Include cookies for same-site requests
       });
 
-      const data = await response.json();
+      // Try to parse JSON response
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
 
       // Handle errors
       if (!response.ok) {
+        console.error('API Response Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data,
+          url: url,
+        });
         throw {
           status: response.status,
-          error: data.error || data.message || 'Request failed',
-          code: data.code || response.status,
+          error: typeof data === 'object' ? (data.error || data.message || 'Request failed') : data,
+          code: typeof data === 'object' ? (data.code || response.status) : response.status,
         };
       }
 
-      return data.data || data;
+      return typeof data === 'object' ? (data.data || data) : data;
     } catch (err) {
-      console.error('API Error:', err);
+      console.error('API Error:', {
+        error: err,
+        url: url,
+        message: err.message || err,
+      });
       throw err;
     }
   },
