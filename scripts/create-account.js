@@ -114,7 +114,7 @@ async function handleCreateAccount(event) {
     document.getElementById('alertText').textContent = 'Account created successfully! Redirecting...';
 
     setTimeout(() => {
-      window.location.href = 'pages/user-management.html';
+      window.location.href = 'user-management.html';
     }, 1500);
   } catch (err) {
     setLoading(false);
@@ -126,6 +126,6 @@ async function handleCreateAccount(event) {
 
 function goBack() {
   if (confirm('Discard changes and go back?')) {
-    window.location.href = 'pages/user-management.html';
+    window.location.href = 'user-management.html';
   }
 }

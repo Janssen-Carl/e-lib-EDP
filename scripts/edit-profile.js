@@ -28,7 +28,7 @@ async function initProfile() {
     document.getElementById('accountStatus').value = user.AccountStatus || 'Active';
   } catch (err) {
     console.error('Failed to load profile:', err);
-    window.location.href = 'pages/user-management.html';
+    window.location.href = 'user-management.html';
   }
 }
 
@@ -98,7 +98,7 @@ async function handleUpdateProfile(event) {
   document.getElementById('alertText').textContent = 'Profile updated successfully!';
 
   setTimeout(() => {
-    window.location.href = 'pages/user-management.html';
+    window.location.href = 'user-management.html';
   }, 1500);
 }
 
@@ -109,11 +109,11 @@ function discardChanges() {
 }
 
 function openChangePassword() {
-  window.location.href = 'pages/change-password.html';
+  window.location.href = 'change-password.html';
 }
 
 function goBack() {
-  window.location.href = 'pages/user-management.html';
+  window.location.href = 'user-management.html';
 }
 
 // Initialize on page load

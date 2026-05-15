@@ -97,7 +97,7 @@ async function handleSignIn() {
       `Welcome back! Redirecting to user management…`;
 
     setTimeout(() => {
-      window.location.href = "pages/user-management.html";
+      window.location.href = "user-management.html";
     }, 1500);
   } catch (err) {
     setLoading(false);

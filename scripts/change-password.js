@@ -93,7 +93,7 @@ async function handleChangePassword(event) {
     document.getElementById('alertText').textContent = 'Password changed successfully! Redirecting…';
 
     setTimeout(() => {
-      window.location.href = 'pages/user-management.html';
+      window.location.href = 'user-management.html';
     }, 1500);
   } catch (err) {
     setLoading(false);
@@ -105,5 +105,5 @@ async function handleChangePassword(event) {
 }
 
 function goBack() {
-  window.location.href = 'pages/user-management.html';
+  window.location.href = 'user-management.html';
 }
