@@ -16,14 +16,10 @@ require_once __DIR__ . '/../src/UserService.php';
 
 Backend\Config::loadEnv(__DIR__ . '/../.env');
 
-// Set CORS headers for all responses
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Expose-Headers: Content-Type, X-Total-Count');
-header('Access-Control-Max-Age: 86400');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, OPTIONS');
 
-// Handle preflight requests
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(204);
     exit;
